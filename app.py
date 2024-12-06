@@ -16,7 +16,7 @@ pages={
         st.Page(past,title="Recap", icon="🤔")
     ],
     "Account":[
-        st.Page(settings,title="Settings", icon="⚙")
+        st.Page(settings,title="Settings", icon="⚙️")
     ]
 }
 

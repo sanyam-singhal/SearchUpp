@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import datetime
 
-st.title("History ")
+st.title("History 📜")
 
 history_path=os.path.join("search","search_history.csv")
 

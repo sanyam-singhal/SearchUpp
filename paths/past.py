@@ -4,7 +4,7 @@ import pandas as pd
 import datetime
 import json
 
-st.title("Recap of a previous search...")
+st.title("Recap of a previous search 🤔...")
 
 # Add a back button to return to history
 if st.button("← Back to History"):
@@ -48,7 +48,7 @@ if 'clicked_history_row' in st.session_state:
         if os.path.exists(record['summary_path']):
             with open(record['summary_path'], 'r', encoding='utf-8') as f:
                 summary_content = f.read()
-            st.text_area("Summary", summary_content, height=200)
+            st.markdown(summary_content, unsafe_allow_html=True)
         else:
             st.warning("Summary file not found")
 

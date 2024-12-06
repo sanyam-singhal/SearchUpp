@@ -35,10 +35,12 @@ Your task is to analyze the provided web content and create a comprehensive mark
 3. Uses appropriate markdown formatting for better readability
 4. Preserves key details while eliminating redundant information
 5. Maintains proper context and relationships between ideas
+6. You should structure the output based on the user query like whether they want to make notes, write an article.
+
 
 Focus on providing a summary that is both informative and easy to read.
 
-Respond in 1000-4000 words based on the complexity of the content.
+Respond in 1000-4000 words based on the user query and the complexity of the content.
 """
 def extract_urls_from_json(file_path):
     """
@@ -64,7 +66,7 @@ def extract_urls_from_json(file_path):
         print(f"Error extracting URLs: {str(e)}")
         return None
 
-def web_search(query, key):
+def web_search(query, key,num_searches=5):
     """
     Performs a web search using the Brave Search API
     """
@@ -88,7 +90,7 @@ def web_search(query, key):
 
     params = {
         'q': query,
-        'count': 5,
+        'count': num_searches,
     }
 
     response = requests.get('https://api.search.brave.com/res/v1/web/search', params=params, headers=headers)
@@ -175,7 +177,7 @@ def orchestrate_scraping(urls, key, key_dir):
     finally:
         driver.quit()
 
-def gemini_smart_summary(query, urls, key, key_dir):
+def gemini_smart_summary(query, urls, key, key_dir,model="gemini-1.5-flash-002"):
     """
     Generates a summary using Gemini AI
     """
@@ -206,7 +208,7 @@ def gemini_smart_summary(query, urls, key, key_dir):
     
     print("\nGenerating smart summary using Gemini...")
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash-002",
+        model_name=model,
         system_instruction=extract_instructions
     )
     
@@ -219,7 +221,7 @@ def gemini_smart_summary(query, urls, key, key_dir):
             print(f"API Error Status Code: {e.status_code}")
         return None
 
-def smart_search(query, key, urls):
+def smart_search(query, key, urls,model="gemini-1.5-flash-002"):
     """
     Performs a smart search using the given query
     """
@@ -240,7 +242,7 @@ def smart_search(query, key, urls):
     orchestrate_scraping(links, key, key_dir)
     
     # Generate summary
-    summary = gemini_smart_summary(query, links, key, key_dir)
+    summary = gemini_smart_summary(query, links, key, key_dir,model)
     if summary:
         summary_file = os.path.join(key_dir, "summary.md")
         with open(summary_file, 'w', encoding='utf-8') as f:
