@@ -15,6 +15,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import google.generativeai as genai
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor
+from selenium.webdriver import ActionChains
 
 # Initial Setup
 load_dotenv()
@@ -159,22 +161,38 @@ def scrape_page(driver, url, key_dir):
     except Exception as e:
         print(f"Error scraping {url}: {str(e)}")
 
+def scrape_url(url, chrome_options, key_dir):
+    driver = webdriver.Chrome(options=chrome_options)
+    scrape_page(driver, url, key_dir)
+    driver.quit()
+
 def orchestrate_scraping(urls, key, key_dir):
     """
     Orchestrates the scraping of multiple URLs using Selenium
     """
     chrome_options = Options()
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--disable-extensions')
+    chrome_options.add_argument('--enable-javascript')
     chrome_options.add_argument(f'user-agent={ua.random}')
-    
-    driver = webdriver.Chrome(options=chrome_options)
-    
-    try:
-        for url in urls:
-            scrape_page(driver, url, key_dir)
-    finally:
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--user-data-dir=/path/to/your/custom/profile')
+
+    drivers = []  # List to hold driver instances
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(scrape_url, url, chrome_options, key_dir): url for url in urls}
+
+    # Wait for all threads to complete
+    for future in futures:
+        try:
+            driver = future.result()  # This will raise exceptions if any occurred in the thread
+            if driver:
+                drivers.append(driver)  # Store the driver instance
+        except Exception as e:
+            print(f"Error processing {futures[future]}: {str(e)}")
+
+    # Terminate all driver instances
+    for driver in drivers:
         driver.quit()
 
 def gemini_smart_summary(query, urls, key, key_dir,model="gemini-1.5-flash-002"):

@@ -50,8 +50,8 @@ simple_model = st.selectbox(
 )
 complex_model = st.selectbox(
     "Advanced Search Model",
-    options=["gemini-1.5-flash-002", "gemini-1.5-pro-002"],
-    index=0 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-flash-002" else 1
+    options=["gemini-1.5-flash-002", "gemini-1.5-pro-002","gemini-exp-1206"],
+    index=0 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-flash-002" else 1 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-pro-002" else 2
 )
 
 # Save Settings Button
