@@ -4,7 +4,10 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
 
 ## 🌟 Features
 
-- **Smart Web Search**: Utilizes Brave Search API for accurate and privacy-focused web results
+- **Smart Web Search**: 
+  - Utilizes Brave Search API for accurate and privacy-focused web results
+  - Enhanced scraping setup for improved content extraction
+  - Optimized search result processing
 - **Intelligent Web Scraping**: 
   - Human-like browsing behavior with random scrolling and mouse movements
   - Robust content extraction from various webpage structures
@@ -22,6 +25,11 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
   - Easy access to past searches and summaries
   - Organized storage of scraped content
 - **Advanced Search**: Toggle between simple and advanced search modes to customize search depth and model complexity.
+- **Customizable Theme**:
+  - Dynamic theme customization through Settings page
+  - Control primary colors, background colors, and text colors
+  - Font selection options
+  - Changes persist across sessions
 
 ## Performance Note
 
@@ -59,14 +67,31 @@ GEMINI_KEY='your_gemini_api_key'
 SIMPLE_SEARCH_NUMBER='5'
 COMPLEX_SEARCH_NUMBER='10'
 SIMPLE_LLM_MODEL='gemini-1.5-flash-002'
-COMPLEX_LLM_MODEL='gemini-1.5-pro-002'
+COMPLEX_LLM_MODEL='gemini-exp-1206'
+PROJECT_DIR='your_project_directory_path'
 ```
 
-These settings can also be configured through the Settings page in the application.
+These settings can be configured through the Settings page in the application.
 
 ### Running the Application
 
-Start the Streamlit app:
+You can run the application using the provided scripts:
+
+**Windows**:
+- Double-click the `run_searchupp.bat` file
+- Or run from command prompt:
+```bash
+.\run_searchupp.bat
+```
+
+**macOS/Linux**:
+- Make the script executable and run:
+```bash
+chmod +x run_searchupp.sh
+./run_searchupp.sh
+```
+
+Alternatively, start the Streamlit app directly:
 ```bash
 streamlit run app.py
 ```
@@ -75,15 +100,20 @@ streamlit run app.py
 
 ```
 searchupp/
-├── app.py                 # Main Streamlit application
+├── app.py                  # Main Streamlit application
 ├── modules/
-│   └── search_modules.py # Core search and scraping functionality
+│   ├── search_modules.py   # Core search and scraping functionality
+│   └── modify_theme.py     # Theme customization functionality
 ├── paths/
-│   ├── search.py         # Search page implementation
-│   ├── history.py        # History page implementation
-│   ├── past.py           # Past searches page implementation
-│   ├── settings.py # Settings management page implementation
-└── search/               # Directory for storing search results
+│   ├── search.py          # Search page implementation
+│   ├── history.py         # History page implementation
+│   ├── past.py            # Past searches page implementation
+│   └── settings.py        # Settings and theme management
+├── .streamlit/
+│   └── config.toml        # Streamlit configuration and theme settings
+├── run_searchupp.bat      # Windows startup script
+├── run_searchupp.sh       # macOS/Linux startup script
+└── search/                # Directory for storing search results
 ```
 
 ## 🔧 Core Components
@@ -145,7 +175,7 @@ All settings can be configured through the Settings page (⚙️) in the applica
 - **Search** (🔍): Main search interface with toggle for Advanced Search
 - **History** (📜): View all past searches
 - **Recap** (🤔): Detailed view of past search results
-- **Settings** (⚙️): Configure API keys and search parameters
+- **Settings** (⚙️): Configure application settings and customize theme
 
 ## ⚙️ Configuration
 
