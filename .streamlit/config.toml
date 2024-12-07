@@ -1,0 +1,10 @@
+[theme]
+base = "light"
+primaryColor = "#f27bbd"
+backgroundColor = "#874ccc"
+secondaryBackgroundColor = "#c65bcf"
+textColor = "#ffffff"
+font = "monospace"
+
+[server]
+runOnSave = true
