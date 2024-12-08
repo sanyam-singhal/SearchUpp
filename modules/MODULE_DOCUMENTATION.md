@@ -33,23 +33,24 @@ urls = extract_urls_from_json('search_results.json')
 Web Search Function using Brave Search API
 
 This function conducts a web search by leveraging the Brave Search API, providing 
-a robust and flexible method for retrieving web search results.
+a robust and flexible method for retrieving web search results. It also reranks the results
+based on their relevance to the provided query.
 
 **Key Features:**
 - Dynamically creates search result storage directories
 - Utilizes Brave Search API for web searches
 - Configurable number of search results
 - Saves search results to a JSON file for further processing
-- Extracts and returns URLs from the search results
+- Extracts, reranks, and returns URLs from the search results
 
 **Parameters:**
-- `query` (str): The search query to be executed
-- `key` (str): A unique identifier for organizing search results
-- `num_searches` (int, optional): Number of search results to retrieve (default is 5)
+- `query` (str): The search query to be executed.
+- `key` (str): A unique identifier for organizing search results.
+- `num_searches` (int, optional): Number of search results to retrieve after reranking (default is 5).
 
 **Returns:**
-- List or None: A list of dictionaries containing URLs and titles from search results
-- Returns None if an error occurs during the search process
+- List or None: A list of dictionaries containing URLs and titles from search results,
+Returns None if an error occurs during the search process.
 
 **Example Usage:**
 ```python
@@ -129,6 +130,34 @@ and scalable web content extraction mechanism.
 ```python
 orchestrate_scraping(['https://example1.com', 'https://example2.com'], 'search_key', '/output/dir')
 # Scrapes multiple URLs concurrently and saves content
+```
+
+### `rerank_urls(query, urls, num_searches=5)`
+
+Reranks a list of URLs based on their relevance to a given query.
+
+This function takes a list of URLs and a search query, analyzing the content of each URL 
+to determine its relevance to the query. It employs a scoring mechanism using the Google embedding model 
+and the Euclidean norm to rank the URLs, returning the top results based on the specified number of searches.
+
+**Key Features:**
+- Analyzes the content of each URL to evaluate relevance
+- Utilizes the Google embedding model for scoring based on embedding similarity
+- Uses the Euclidean norm as the scoring mechanism
+- Returns a list of the top-ranked URLs based on relevance
+
+**Parameters:**
+- `query` (str): The search query used to evaluate URL relevance.
+- `urls` (list): A list of URLs to be reranked, where each URL is represented as a dictionary with a 'title' key.
+- `num_searches` (int, optional): The number of top-ranked URLs to return (default is 5).
+
+**Returns:**
+- List: A list of the top-ranked URLs based on relevance to the query.
+
+**Example Usage:**
+```python
+ranked_urls = rerank_urls('Python programming', urls)
+# Might return the top 5 URLs relevant to 'Python programming'
 ```
 
 ### `gemini_smart_summary(query, urls, key, key_dir, model="gemini-1.5-flash-002")`
