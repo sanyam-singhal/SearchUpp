@@ -6,6 +6,7 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
 
 - **Smart Web Search**: 
   - Utilizes Brave Search API for accurate and privacy-focused web results
+  - Semantic reranking of search results using vector embeddings
   - Enhanced scraping setup for improved content extraction
   - Optimized search result processing
 - **Intelligent Web Scraping**: 
@@ -20,6 +21,7 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
   - Generates comprehensive summaries using Gemini AI
   - Maintains context and key relationships between ideas
   - Customizable summary length (1000-4000 words)
+  - Configurable LLM system instructions for content summarization
 - **Research History**:
   - Saves all research sessions
   - Easy access to past searches and summaries
@@ -30,6 +32,10 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
   - Control primary colors, background colors, and text colors
   - Font selection options
   - Changes persist across sessions
+- **Comprehensive Documentation**:
+  - Detailed function-level documentation
+  - Clear explanation of each module's functionality
+  - Examples and usage instructions for all components
 
 ## Performance Note
 
@@ -69,6 +75,7 @@ COMPLEX_SEARCH_NUMBER='10'
 SIMPLE_LLM_MODEL='gemini-1.5-flash-002'
 COMPLEX_LLM_MODEL='gemini-exp-1206'
 PROJECT_DIR='your_project_directory_path'
+SEARCH_SUMMARY_INSTRUCTIONS='your_custom_llm_instructions'
 ```
 
 These settings can be configured through the Settings page in the application.
@@ -120,6 +127,7 @@ searchupp/
 
 ### Web Search
 - Utilizes Brave Search API for comprehensive web results
+- Implements semantic reranking using vector embeddings
 - Extracts and processes URLs from search results
 - Handles pagination and result filtering
 
@@ -136,6 +144,7 @@ searchupp/
 
 ### Summary Generation
 - Utilizes Google's Gemini AI for intelligent summarization
+- Customizable system instructions for content summarization
 - Maintains context and relationships between ideas
 - Generates comprehensive summaries (1000-4000 words)
 
@@ -143,6 +152,7 @@ searchupp/
 
 1. **Start a New Search**:
    - Enter your research query
+   - Choose between simple and advanced search modes
    - Wait for the search results and web scraping to complete
    - Review the generated summary
 
@@ -150,6 +160,12 @@ searchupp/
    - Access past searches from the History page
    - Click on any past search to view details
    - Navigate through your research history
+
+3. **Customize Settings**:
+   - Configure API keys and search parameters
+   - Customize the theme to your preference
+   - Modify LLM system instructions for content summarization
+   - Adjust the number of search results
 
 ## 🎛️ Configuration
 
@@ -161,7 +177,7 @@ SearchUpp offers two modes of operation:
 - Optimized for quick research tasks
 
 ### Advanced Search
-- Uses `gemini-1.5-pro-002` model by default
+- Uses `gemini-1.5-flash-002` model by default
 - Fetches 10 search results
 - Better for in-depth research requiring more comprehensive results
 
@@ -169,6 +185,7 @@ All settings can be configured through the Settings page (⚙️) in the applica
 - API Keys (Brave Search and Google Gemini)
 - Search results count for both modes
 - AI model selection for both modes
+- LLM system instructions for content summarization
 
 ## 🗂️ Application Pages
 
@@ -186,6 +203,7 @@ The application can be configured through environment variables:
 - `COMPLEX_SEARCH_NUMBER`: Number of results for complex search
 - `SIMPLE_LLM_MODEL`: Model used for simple search summarization
 - `COMPLEX_LLM_MODEL`: Model used for complex search summarization
+- `SEARCH_SUMMARY_INSTRUCTIONS`: Custom instructions for LLM content summarization
 
 ## 🤝 Contributing
 

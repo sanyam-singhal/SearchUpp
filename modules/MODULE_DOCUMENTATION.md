@@ -254,4 +254,4 @@ modify_theme(
 ---
 
 **Generated on:** 2024-12-08
-**Documentation Version:** 1.0
+**Documentation Version:** 1.1
