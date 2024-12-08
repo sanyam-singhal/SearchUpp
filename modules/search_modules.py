@@ -7,6 +7,7 @@ from datetime import datetime
 from fake_useragent import UserAgent
 import random
 import pandas as pd
+import numpy as np
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -23,27 +24,11 @@ load_dotenv()
 ua = UserAgent()
 genai.configure(api_key=os.getenv("GEMINI_KEY"))
 brave_key=os.getenv("BRAVE_KEY")
+extract_instructions = os.getenv("SEARCH_SUMMARY_INSTRUCTIONS")
 
 # Random viewport sizes for more human-like behavior
 viewport_widths = [1366, 1440, 1536, 1600, 1920]
 viewport_heights = [768, 900, 864, 1024, 1080]
-
-extract_instructions = """
-You are an expert at extracting and summarizing information from web pages.
-Your task is to analyze the provided web content and create a comprehensive markdown summary that:
-
-1. Identifies and highlights the most important information
-2. Organizes the content in a clear, logical structure
-3. Uses appropriate markdown formatting for better readability
-4. Preserves key details while eliminating redundant information
-5. Maintains proper context and relationships between ideas
-6. You should structure the output based on the user query like whether they want to make notes, write an article.
-
-
-Focus on providing a summary that is both informative and easy to read.
-
-Respond in 1000-4000 words based on the user query and the complexity of the content.
-"""
 
 def extract_urls_from_json(file_path):
     """

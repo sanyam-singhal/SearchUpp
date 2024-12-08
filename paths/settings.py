@@ -109,11 +109,22 @@ with model_settings:
         options=["gemini-1.5-flash-002", "gemini-1.5-pro-002","gemini-exp-1206"],
         index=0 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-flash-002" else 1 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-pro-002" else 2
     )
+
+    summary_instructions = st.text_area(
+        label="LLM Summary Instructions",
+        value=os.getenv("SEARCH_SUMMARY_INSTRUCTIONS"),
+        height=400
+    )
+
     
     # Save Settings Button
     if st.button("Save Settings",key="model_settings"):
         # Update all environment variables
         update_env_var("SIMPLE_LLM_MODEL", simple_model)
         update_env_var("COMPLEX_LLM_MODEL", complex_model)
+        
+        # Flatten summary instructions
+        flattened_instructions = " ".join(summary_instructions.split())
+        update_env_var("SEARCH_SUMMARY_INSTRUCTIONS", flattened_instructions)
         
         st.success("Settings saved successfully! Please restart the application for changes to take effect.")
