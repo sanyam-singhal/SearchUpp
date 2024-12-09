@@ -77,7 +77,8 @@ def extract_urls_from_json(file_path):
                 if 'url' in result:
                     urls.append({
                         'title': result['title'],
-                        'url': result['url']
+                        'url': result['url'],
+                        'description': result['description']
                     })
         
         return urls
@@ -86,48 +87,48 @@ def extract_urls_from_json(file_path):
         print(f"Error extracting URLs: {str(e)}")
         return None
 
-def rerank_urls(query, urls, num_searches=5):
+def rerank_urls(query, urls):
     """
     Reranks a list of URLs based on their relevance to a given query.
-
-    This function takes a list of URLs and a search query, analyzing the content of each URL 
-    to determine its relevance to the query. It employs a scoring mechanism using the Google embedding model 
-    and the Euclidean norm to rank the URLs, returning the top results based on the specified number of searches.
-
-    Key Features:
-    - Analyzes the content of each URL to evaluate relevance
-    - Utilizes the Google embedding model for scoring based on embedding similarity
-    - Uses the Euclidean norm as the scoring mechanism
-    - Returns a list of the top-ranked URLs based on relevance
-
-    Parameters:
-    -----------
-    query : str
-        The search query used to evaluate URL relevance.
-    urls : list
-        A list of URLs to be reranked, where each URL is represented as a dictionary with a 'title' key.
-    num_searches : int, optional
-        The number of top-ranked URLs to return (default is 5).
-
-    Returns:
-    --------
-    list
-        A list of the top-ranked URLs based on relevance to the query.
-
-    Example:
-    --------
-    ranked_urls = rerank_urls('Python programming', urls)
-    # Might return the top 5 URLs relevant to 'Python programming'
     """
-    url_titles=[url['title'] for url in urls]
-    query_embed=genai.embed_content(model="models/text-embedding-004",content=[query])
-    query_embed=np.array(query_embed["embedding"])
-    url_embeds=genai.embed_content(model="models/text-embedding-004",content=url_titles)
-    url_embeds=np.array(url_embeds["embedding"])
-    url_scores=np.linalg.norm(url_embeds-query_embed, axis=1)
-    sorted_urls=[url for _,url in sorted(zip(url_scores,urls),reverse=True)]
-    sorted_urls=sorted_urls[:num_searches]
-    return sorted_urls
+    if not urls:
+        print("No URLs to rerank")
+        return []
+        
+    try:
+        # Extract descriptions, handling None values
+        url_descriptions = []
+        valid_urls = []
+        
+        for url in urls:
+            if url.get('description'):
+                url_descriptions.append(url['description'])
+                valid_urls.append(url)
+            else:
+                print(f"Skipping URL without description: {url.get('url', 'unknown')}")
+        
+        if not valid_urls:
+            print("No valid URLs with descriptions found")
+            return urls  # Return original URLs if none have descriptions
+            
+        # Get embeddings
+        query_embed = genai.embed_content(model="models/text-embedding-004", content=[query])
+        query_embed = np.array(query_embed["embedding"])
+        url_embeds = genai.embed_content(model="models/text-embedding-004", content=url_descriptions)
+        url_embeds = np.array(url_embeds["embedding"])
+        
+        # Calculate scores and sort
+        url_scores = np.linalg.norm(url_embeds - query_embed, axis=1)
+        
+        # Create list of (score, url) tuples and sort
+        url_with_scores = list(zip(url_scores, valid_urls))
+        sorted_urls = [url for _, url in sorted(url_with_scores, reverse=True)]
+        
+        return sorted_urls
+        
+    except Exception as e:
+        print(f"Error in rerank_urls: {str(e)}")
+        return urls  # Return original URLs if reranking fails
 
 def web_search(query, key, num_searches=5):
     """
@@ -201,17 +202,24 @@ def web_search(query, key, num_searches=5):
     response = requests.get('https://api.search.brave.com/res/v1/web/search', params=params, headers=headers)
 
     data=response.json()
-
+    
     file_path = os.path.join(key_dir, "web_search.json")
     with open(file_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-        
+    
     print(f"Search results saved to: {file_path}")
-        
+    
     # Extract and return URLs
     urls= extract_urls_from_json(file_path)
-    sorted_urls=rerank_urls(query, urls, num_searches)
-    return sorted_urls
+    sorted_urls=rerank_urls(query, urls)
+
+    file_path = os.path.join(key_dir, "web_search.json")
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(sorted_urls, f, ensure_ascii=False, indent=4)
+    
+    print(f"Search results saved to: {file_path}")
+    
+    return sorted_urls[:num_searches]
 
 def scrape_page(driver, url, key_dir):
     """
@@ -270,11 +278,15 @@ def scrape_page(driver, url, key_dir):
     today_date = datetime.now().strftime("%d-%m-%Y")
     output_file = os.path.join(storage_path, f"{today_date}.md")
 
+    print(f"Saving content to: {output_file}")
+
     try:
+        print(f"Navigating to URL: {url}")
         driver.get(url)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.TAG_NAME, "body"))
         )
+        print(f"Page loaded successfully for {url}")
         
         # Get page content
         html = driver.page_source
@@ -286,6 +298,9 @@ def scrape_page(driver, url, key_dir):
         
         # Extract content with structure
         content = []
+        content.append(f"# Source URL: {url}\n")
+        content.append(f"# Scraped on: {today_date}\n\n")
+        
         for element in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol']):
             if element.name.startswith('h'):
                 heading_level = element.name[1]
@@ -304,9 +319,51 @@ def scrape_page(driver, url, key_dir):
         text = '\n'.join(content)
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(text)
+        
+        print(f"Successfully saved content for {url}")
             
     except Exception as e:
         print(f"Error scraping {url}: {str(e)}")
+        raise  # Re-raise the exception to be caught by the caller
+
+def orchestrate_scraping(urls, key, key_dir):
+    """
+    Web Scraping Orchestration Function
+
+    This function manages the parallel scraping of multiple URLs using 
+    ThreadPoolExecutor and Selenium WebDriver, providing an efficient 
+    and scalable web content extraction mechanism.
+    """
+    def scrape_with_new_driver(url):
+        print(f"\nStarting to scrape URL: {url}")
+        chrome_options = Options()
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--enable-javascript')
+        user_agent = ua.random
+        chrome_options.add_argument(f'user-agent={user_agent}')
+        chrome_options.add_argument('--ignore-certificate-errors')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        
+        print(f"Using User-Agent: {user_agent}")
+        
+        try:
+            driver = webdriver.Chrome(options=chrome_options)
+            print(f"Created new WebDriver instance for {url}")
+            scrape_page(driver, url, key_dir)
+            print(f"Successfully scraped {url}")
+        except Exception as e:
+            print(f"Error processing {url}: {str(e)}")
+        finally:
+            if 'driver' in locals():
+                driver.quit()
+                print(f"Closed WebDriver instance for {url}")
+
+    print(f"\nStarting parallel scraping for {len(urls)} URLs...")
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        executor.map(scrape_with_new_driver, urls)
+    print("\nCompleted scraping all URLs")
 
 def scrape_url(url, chrome_options, key_dir):
     """
@@ -351,86 +408,6 @@ def scrape_url(url, chrome_options, key_dir):
     driver = webdriver.Chrome(options=chrome_options)
     scrape_page(driver, url, key_dir)
     driver.quit()
-
-def orchestrate_scraping(urls, key, key_dir):
-    """
-    Web Scraping Orchestration Function
-
-    This function manages the parallel scraping of multiple URLs using 
-    ThreadPoolExecutor and Selenium WebDriver, providing an efficient 
-    and scalable web content extraction mechanism.
-
-    Key Features:
-    - Utilizes concurrent threading for parallel URL scraping
-    - Configures Selenium WebDriver with randomized user agents
-    - Manages multiple browser instances safely
-    - Supports flexible scraping of multiple web pages
-
-    Parameters:
-    -----------
-    urls : list
-        A list of URLs to be scraped
-    key : str
-        A unique identifier for the scraping session
-    key_dir : str
-        Directory path for storing scraped content
-
-    WebDriver Configuration:
-    ----------------------
-    - Disables browser extensions
-    - Enables JavaScript
-    - Uses randomized user agents
-    - Ignores SSL certificate errors
-    - Supports custom user data directory
-
-    Concurrency Strategy:
-    -------------------
-    - Uses ThreadPoolExecutor for parallel processing
-    - Limits concurrent workers to 5 to prevent overwhelming resources
-    - Gracefully handles and logs individual URL scraping errors
-    - Ensures all WebDriver instances are properly closed
-
-    Resource Management:
-    -------------------
-    - Dynamically creates and destroys WebDriver instances
-    - Prevents resource leaks through explicit driver management
-    - Supports scalable web scraping across multiple URLs
-
-    Error Handling:
-    --------------
-    - Catches and logs exceptions for individual URL scraping
-    - Continues scraping other URLs even if one fails
-    - Provides robust error resilience
-
-    Example:
-    --------
-    orchestrate_scraping(['https://example1.com', 'https://example2.com'], 'search_key', '/output/dir')
-    # Scrapes multiple URLs concurrently and saves content
-    """
-    chrome_options = Options()
-    chrome_options.add_argument('--disable-extensions')
-    chrome_options.add_argument('--enable-javascript')
-    chrome_options.add_argument(f'user-agent={ua.random}')
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--user-data-dir=/path/to/your/custom/profile')
-
-    drivers = []  # List to hold driver instances
-
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(scrape_url, url, chrome_options, key_dir): url for url in urls}
-
-    # Wait for all threads to complete
-    for future in futures:
-        try:
-            driver = future.result()  # This will raise exceptions if any occurred in the thread
-            if driver:
-                drivers.append(driver)  # Store the driver instance
-        except Exception as e:
-            print(f"Error processing {futures[future]}: {str(e)}")
-
-    # Terminate all driver instances
-    for driver in drivers:
-        driver.quit()
 
 def smart_search(query, key, urls, model):
     """
