@@ -18,7 +18,9 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
   - Maintains content hierarchy and relationships
   - Cleans and normalizes text for better readability
 - **AI-Powered Summarization**:
-  - Generates comprehensive summaries using Gemini AI
+  - Flexible choice between local and cloud-based LLMs
+  - Local summarization using Ollama with open-source models
+  - Cloud-based summarization using Google Gemini AI
   - Maintains context and key relationships between ideas
   - Customizable summary length (1000-4000 words)
   - Configurable LLM system instructions for content summarization
@@ -47,9 +49,10 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
 
 - Python 3.12 (not tested on other versions)
 - Chrome browser installed (used by the Selenium package for scraping)
-- Required API keys:
+- Required API keys and services:
   - Brave Search API key
-  - Google Gemini API key
+  - Google Gemini API key (optional, if using cloud-based summarization)
+  - Ollama installed and running (optional, if using local summarization)
 
 ### Installation
 
@@ -76,6 +79,7 @@ SIMPLE_LLM_MODEL='gemini-1.5-flash-002'
 COMPLEX_LLM_MODEL='gemini-exp-1206'
 PROJECT_DIR='your_project_directory_path'
 SEARCH_SUMMARY_INSTRUCTIONS='your_custom_llm_instructions'
+MODE='Cloud'  # 'Cloud' for Gemini or 'Local' for Ollama
 ```
 
 These settings can be configured through the Settings page in the application.
@@ -110,6 +114,7 @@ searchupp/
 ├── app.py                  # Main Streamlit application
 ├── modules/
 │   ├── search_modules.py   # Core search and scraping functionality
+│   ├── ai_modules.py       # AI-powered summarization (Ollama & Gemini)
 │   └── modify_theme.py     # Theme customization functionality
 ├── paths/
 │   ├── search.py          # Search page implementation
@@ -143,7 +148,9 @@ searchupp/
 - Handles different content types (paragraphs, lists, headings)
 
 ### Summary Generation
-- Utilizes Google's Gemini AI for intelligent summarization
+- Flexible choice between local and cloud-based summarization:
+  - **Local Mode**: Uses Ollama to run open-source models locally
+  - **Cloud Mode**: Utilizes Google's Gemini AI
 - Customizable system instructions for content summarization
 - Maintains context and relationships between ideas
 - Generates comprehensive summaries (1000-4000 words)
@@ -153,6 +160,7 @@ searchupp/
 1. **Start a New Search**:
    - Enter your research query
    - Choose between simple and advanced search modes
+   - Select local or cloud-based summarization
    - Wait for the search results and web scraping to complete
    - Review the generated summary
 
@@ -163,6 +171,7 @@ searchupp/
 
 3. **Customize Settings**:
    - Configure API keys and search parameters
+   - Choose between local and cloud-based summarization
    - Customize the theme to your preference
    - Modify LLM system instructions for content summarization
    - Adjust the number of search results
@@ -172,20 +181,35 @@ searchupp/
 SearchUpp offers two modes of operation:
 
 ### Simple Search
-- Uses `gemini-1.5-flash-002` model by default
+- Uses simpler models (Gemini Flash or Ollama's basic models)
 - Fetches 5 search results
 - Optimized for quick research tasks
 
 ### Advanced Search
-- Uses `gemini-1.5-flash-002` model by default
+- Uses more advanced models
 - Fetches 10 search results
 - Better for in-depth research requiring more comprehensive results
+
+### Summarization Modes
+
+#### Local Mode (Ollama)
+- Runs open-source models locally
+- No API costs or usage limits
+- Requires more computational resources
+- Default model: llama3.2:1b
+
+#### Cloud Mode (Gemini)
+- Uses Google's Gemini AI
+- Faster processing
+- Requires API key and has associated costs
+- Default model: gemini-1.5-flash-002
 
 All settings can be configured through the Settings page (⚙️) in the application, including:
 - API Keys (Brave Search and Google Gemini)
 - Search results count for both modes
 - AI model selection for both modes
 - LLM system instructions for content summarization
+- Summarization mode (Local/Cloud)
 
 ## 🗂️ Application Pages
 
@@ -198,24 +222,19 @@ All settings can be configured through the Settings page (⚙️) in the applica
 
 The application can be configured through environment variables:
 - `BRAVE_KEY`: Your Brave Search API key
-- `GEMINI_KEY`: Your Google Gemini API key
+- `GEMINI_KEY`: Your Google Gemini API key (required for cloud mode)
 - `SIMPLE_SEARCH_NUMBER`: Number of results for simple search
 - `COMPLEX_SEARCH_NUMBER`: Number of results for complex search
 - `SIMPLE_LLM_MODEL`: Model used for simple search summarization
 - `COMPLEX_LLM_MODEL`: Model used for complex search summarization
 - `SEARCH_SUMMARY_INSTRUCTIONS`: Custom instructions for LLM content summarization
+- `MODE`: Summarization mode ('Local' for Ollama or 'Cloud' for Gemini)
 
-## 🤝 Contributing
+## 📚 Documentation
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+For detailed documentation of all functions and modules, please refer to the `modules/MODULE_DOCUMENTATION.md` file.
 
-## 📄 License
+---
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- [Brave Search](https://brave.com/search/) for providing the search API
-- [Google Gemini](https://deepmind.google/technologies/gemini/) for AI-powered summarization
-- [Selenium](https://www.selenium.dev/) for web automation
-- [Streamlit](https://streamlit.io/) for the web interface
+**Generated on:** 2024-12-09
+**Version:** 2.0

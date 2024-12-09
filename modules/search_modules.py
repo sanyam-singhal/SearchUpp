@@ -18,12 +18,14 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 from selenium.webdriver import ActionChains
+from .ai_modules import *
 
 # Initial Setup
 load_dotenv()
 ua = UserAgent()
 genai.configure(api_key=os.getenv("GEMINI_KEY"))
 brave_key=os.getenv("BRAVE_KEY")
+mode=os.getenv("MODE")
 extract_instructions = os.getenv("SEARCH_SUMMARY_INSTRUCTIONS")
 
 # Random viewport sizes for more human-like behavior
@@ -430,105 +432,7 @@ def orchestrate_scraping(urls, key, key_dir):
     for driver in drivers:
         driver.quit()
 
-def gemini_smart_summary(query, urls, key, key_dir,model="gemini-1.5-flash-002"):
-    """
-    Content Summarization Function using Google Gemini AI
-
-    This function leverages Google's Gemini AI to generate intelligent, 
-    comprehensive summaries from web page contents, providing a sophisticated 
-    natural language processing solution for content analysis.
-
-    Key Features:
-    - Utilizes Google's Generative AI (Gemini) for advanced text summarization
-    - Reads markdown files generated from web scraping
-    - Generates structured, context-aware summaries
-    - Supports multiple AI model versions
-    - Saves generated summaries to markdown files
-
-    Parameters:
-    -----------
-    query : str
-        The original search query driving the summarization
-    urls : list
-        List of URLs that were scraped
-    key : str
-        Unique identifier for the search session
-    key_dir : str
-        Directory containing scraped content
-    model : str, optional
-        Gemini AI model version to use (default: "gemini-1.5-flash-002")
-
-    Summarization Workflow:
-    ----------------------
-    1. Locate and read markdown files from scraped URLs
-    2. Prepare comprehensive input for Gemini AI
-    3. Generate summary using predefined extraction instructions
-    4. Save summary to a markdown file in the key directory
-
-    AI Model Configuration:
-    ---------------------
-    - Supports flexible model selection
-    - Uses predefined extraction instructions for consistent output
-    - Handles potential API rate limits and errors
-
-    File Management:
-    ---------------
-    - Reads markdown files from URL-specific directories
-    - Generates summary files with descriptive naming
-    - Ensures organized storage of generated summaries
-
-    Error Handling:
-    --------------
-    - Gracefully handles file reading and AI generation errors
-    - Provides logging and error tracking
-    - Continues processing even if individual URL summarization fails
-
-    Example:
-    --------
-    gemini_smart_summary('Python programming', urls, 'python_search', '/output/dir')
-    # Generates AI-powered summaries for the given URLs
-    """
-    all_content = []
-    today_date = datetime.now().strftime("%d-%m-%Y")
-    
-    print("\nReading scraped content...")
-    for url in urls:
-        filename = url.split('//')[-1]
-        filename = re.sub(r'[<>:"/\\|?*#]', '-', filename)
-        filename = filename.replace('.', '_')
-        file_path = os.path.join(key_dir, filename, f"{today_date}.md")
-        
-        try:
-            if os.path.exists(file_path):
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read().strip()
-                    if content:
-                        all_content.append(content)
-        except Exception as e:
-            print(f"Error reading file {file_path}: {str(e)}")
-    
-    if not all_content:
-        print("No content found in scraped files.")
-        return None
-    
-    text = f"Query: {query}\n\nWebpage Contents:\n\n" + "\n\n---\n\n".join(all_content)
-    
-    print("\nGenerating smart summary using Gemini...")
-    model = genai.GenerativeModel(
-        model_name=model,
-        system_instruction=extract_instructions
-    )
-    
-    try:
-        result = model.generate_content(text)
-        return result.text
-    except Exception as e:
-        print(f"Failed to generate summary: {str(e)}")
-        if hasattr(e, 'status_code'):
-            print(f"API Error Status Code: {e.status_code}")
-        return None
-
-def smart_search(query, key, urls,model="gemini-1.5-flash-002"):
+def smart_search(query, key, urls, model):
     """
     Smart Search Orchestration Function
 
@@ -550,8 +454,8 @@ def smart_search(query, key, urls,model="gemini-1.5-flash-002"):
         A unique identifier for the search session
     urls : list, optional
         Pre-existing list of URLs to process (if not provided by web search)
-    model : str, optional
-        AI model version for summarization (default: "gemini-1.5-flash-002")
+    model : str
+        AI model version for summarization
 
     Search Workflow:
     ---------------
@@ -601,7 +505,11 @@ def smart_search(query, key, urls,model="gemini-1.5-flash-002"):
     orchestrate_scraping(links, key, key_dir)
     
     # Generate summary
-    summary = gemini_smart_summary(query, links, key, key_dir,model)
+    if mode=="Local":
+        summary = ollama_model(query, links, key, key_dir,model)
+    else:
+        summary = gemini_smart_summary(query, links, key, key_dir,model)
+    
     if summary:
         summary_file = os.path.join(key_dir, "summary.md")
         with open(summary_file, 'w', encoding='utf-8') as f:

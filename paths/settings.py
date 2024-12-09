@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv, set_key
 from modules.modify_theme import modify_theme
 import toml
+import ollama
 
 st.title("Settings ⚙️")
 
@@ -99,16 +100,27 @@ with search_settings:
 with model_settings:
     # Model Settings Section
     st.header("Model Settings")
-    simple_model = st.selectbox(
-        "Simple Search Model",
-        options=["gemini-1.5-flash-002", "gemini-1.5-pro-002"],
-        index=0 if os.getenv("SIMPLE_LLM_MODEL") == "gemini-1.5-flash-002" else 1
-    )
-    complex_model = st.selectbox(
-        "Advanced Search Model",
-        options=["gemini-1.5-flash-002", "gemini-1.5-pro-002","gemini-exp-1206"],
-        index=0 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-flash-002" else 1 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-pro-002" else 2
-    )
+    mode=st.selectbox("How to run LLMs?",["Local","Cloud"],index=0 if os.getenv("MODE") == "Local" else 1)
+
+    if mode=="Local": 
+        available_local_models=ollama.list()
+        available_local_models=[model["model"] for model in available_local_models["models"]]
+        simple_model=st.selectbox(label="Simple Search Model (Local)",options=available_local_models,key="local_simple_model")
+        complex_model=st.selectbox(label="Advanced Search Model (Local)",options=available_local_models,key="local_complex_model")
+    
+    else:
+        simple_model = st.selectbox(
+            label="Simple Search Model (Cloud)",
+            options=["gemini-1.5-flash-002", "gemini-1.5-pro-002"],
+            key="cloud_simple_model",
+            index=0 if os.getenv("SIMPLE_LLM_MODEL") == "gemini-1.5-flash-002" else 1
+        )
+        complex_model = st.selectbox(
+            label="Advanced Search Model (Cloud)",
+            options=["gemini-1.5-flash-002", "gemini-1.5-pro-002","gemini-exp-1206"],
+            key="cloud_complex_model",
+            index=0 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-flash-002" else 1 if os.getenv("COMPLEX_LLM_MODEL") == "gemini-1.5-pro-002" else 2
+        )
 
     summary_instructions = st.text_area(
         label="LLM Summary Instructions",
@@ -120,6 +132,7 @@ with model_settings:
     # Save Settings Button
     if st.button("Save Settings",key="model_settings"):
         # Update all environment variables
+        update_env_var("MODE", mode)
         update_env_var("SIMPLE_LLM_MODEL", simple_model)
         update_env_var("COMPLEX_LLM_MODEL", complex_model)
         
