@@ -33,9 +33,8 @@ if 'clicked_history_row' in st.session_state:
     record = st.session_state.clicked_history_row
     
     # Display the search details in a card-like format
-    st.markdown("### Search Details")
     
-    st.write(f"**Search Query:** {record['query']}")
+    st.subheader(f"{record['query']}")
     st.write(f"**Date & Time:** {record['datetime']}")
     
     # Display file contents if they exist
