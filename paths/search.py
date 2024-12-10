@@ -4,9 +4,11 @@ import pandas as pd
 from datetime import datetime
 from modules.search_modules import *
 from dotenv import load_dotenv
-import pyperclip
 import toml
 import time
+import json
+
+import streamlit.components.v1 as components
 
 # Load current theme
 config_path = os.path.join(os.path.dirname(__file__), '..', '.streamlit', 'config.toml')
@@ -99,25 +101,85 @@ with results:
         
         
 with summary:
-    if os.path.exists(search_query_path):
+    summary_file_path = os.path.join("search", f"search_{current_index}", "summary.md")
+    
+    if os.path.exists(search_query_path) and not os.path.exists(summary_path):
         search_content = json.load(open(search_query_path, encoding='utf-8'))
         urls = search_content[:num_searches]
         with st.spinner('Generating summary...'):
             summary = smart_search(query, current_index, urls, model)
             query=None
     
-    try:
-        summary_content=open(os.path.join("search", f"search_{current_index}", "summary.md"), 'r', encoding='utf-8').read()
+    if os.path.exists(summary_file_path):
+        summary_content = open(summary_file_path, 'r', encoding='utf-8').read()
         end_time = time.time()
         elapsed_time = end_time - start_time
         st.divider()
         st.write(f"Time taken: {elapsed_time:.2f} seconds")
         st.divider()
-        if summary_content:
-            # if st.button(label="Copy Summary",key="copy_summary"):
-            #     pyperclip.copy(summary_content)
-            #     st.success("Summary copied to clipboard!")
-            st.markdown(summary_content)
+
+        # Create the HTML component
+        copy_component = f"""
+        <style>
+            .copy-btn {{
+                background-color: {secondary_background_color};
+                color: {text_color};
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }}
+            .copy-btn:hover {{
+                background-color: {primary_color};
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }}
+            .copy-btn:active {{
+                transform: translateY(0);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }}
+            .copy-btn.copied {{
+                background-color: {primary_color};
+            }}
+        </style>
+        <div>
+            <button id="copyButton" class="copy-btn">
+                Copy Summary
+            </button>
+        </div>
+        <script>
+            const copyButton = document.getElementById('copyButton');
+            const textToCopy = `{summary_content.replace("`", "\\`").replace("$", "\\$")}`;
             
-    except Exception as e:
+            copyButton.addEventListener('click', async () => {{
+                try {{
+                    await navigator.clipboard.writeText(textToCopy);
+                    copyButton.textContent = '✓ Copied!';
+                    copyButton.classList.add('copied');
+                    setTimeout(() => {{
+                        copyButton.textContent = 'Copy Summary';
+                        copyButton.classList.remove('copied');
+                    }}, 2000);
+                }} catch (err) {{
+                    console.error('Failed to copy:', err);
+                    copyButton.textContent = '✗ Failed to copy';
+                    setTimeout(() => {{
+                        copyButton.textContent = 'Copy Summary';
+                    }}, 2000);
+                }}
+            }});
+        </script>
+        """
+        
+        # Render the component
+        components.html(copy_component, height=50)
+        
+        # Display the summary content
+        st.markdown("### Summary")
+        st.markdown(summary_content)
+    else:
         st.warning("No summary generated yet")

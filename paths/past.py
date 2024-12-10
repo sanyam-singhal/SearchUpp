@@ -6,6 +6,8 @@ import json
 import pyperclip
 import toml
 
+import streamlit.components.v1 as components
+
 # Load current theme
 config_path = os.path.join(os.path.dirname(__file__), '..', '.streamlit', 'config.toml')
 
@@ -66,10 +68,66 @@ if 'clicked_history_row' in st.session_state:
         if os.path.exists(record['summary_path']):
             with open(record['summary_path'], 'r', encoding='utf-8') as f:
                 summary_content = f.read()
-            if st.button(label="Copy Summary",key="copy_summary"):
-                pyperclip.copy(summary_content)
-                st.success("Summary copied to clipboard!")
-            st.markdown(summary_content, unsafe_allow_html=True)
+            # Create the HTML component
+            copy_component = f"""
+            <style>
+                .copy-btn {{
+                    background-color: {secondary_background_color};
+                    color: {text_color};
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+                .copy-btn:hover {{
+                    background-color: {primary_color};
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                }}
+                .copy-btn:active {{
+                    transform: translateY(0);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }}
+                .copy-btn.copied {{
+                    background-color: {primary_color};
+                }}
+            </style>
+            <div>
+                <button id="copyButton" class="copy-btn">
+                    Copy Summary
+                </button>
+            </div>
+            <script>
+                const copyButton = document.getElementById('copyButton');
+                const textToCopy = `{summary_content.replace("`", "\\`").replace("$", "\\$")}`;
+                
+                copyButton.addEventListener('click', async () => {{
+                    try {{
+                        await navigator.clipboard.writeText(textToCopy);
+                        copyButton.textContent = '✓ Copied!';
+                        copyButton.classList.add('copied');
+                        setTimeout(() => {{
+                            copyButton.textContent = 'Copy Summary';
+                            copyButton.classList.remove('copied');
+                        }}, 2000);
+                    }} catch (err) {{
+                        console.error('Failed to copy:', err);
+                        copyButton.textContent = '✗ Failed to copy';
+                        setTimeout(() => {{
+                            copyButton.textContent = 'Copy Summary';
+                        }}, 2000);
+                    }}
+                }});
+            </script>
+            """
+            
+            # Render the component
+            components.html(copy_component, height=50)
+            st.markdown(summary_content)
             
         else:
             st.warning("Summary file not found")
