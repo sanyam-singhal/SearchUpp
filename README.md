@@ -2,6 +2,12 @@
 
 SearchUpp is an intelligent web research assistant that helps you gather, analyze, and summarize information from multiple web sources. It combines powerful web scraping capabilities with AI-driven summarization to streamline your research process.
 
+## Interactive Demo 
+
+Find the demo [here](https://app.arcade.software/share/Z49Xibxk5GCP9En9oAMo)
+
+![SearchUpp Demo](https://github.com/yourusername/searchupp/blob/main/assets/searchupp.png?raw=true)
+
 ## 🌟 Features
 
 - **Smart Web Search**: 
