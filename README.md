@@ -6,7 +6,7 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
 
 Find the demo [here](https://app.arcade.software/share/Z49Xibxk5GCP9En9oAMo)
 
-![SearchUpp Demo](https://github.com/yourusername/searchupp/blob/main/assets/searchupp.png?raw=true)
+![SearchUpp Demo](https://github.com/yourusername/searchupp/blob/main/assets/searchupp.png)
 
 ## 🌟 Features
 
