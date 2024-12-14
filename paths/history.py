@@ -26,5 +26,5 @@ if os.path.exists(history_path):
                 st.switch_page("paths/past.py")
         st.divider()
 
-elif not os.path.exists(history_path):
+else:
     st.write("No history found")

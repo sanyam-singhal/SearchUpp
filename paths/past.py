@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import datetime
 import json
-import pyperclip
 import toml
 
 import streamlit.components.v1 as components
@@ -23,10 +22,10 @@ secondary_background_color = config.get('theme', {}).get('secondaryBackgroundCol
 text_color = config.get('theme', {}).get('textColor')
 font = config.get('theme', {}).get('font')
 
-st.title("Recap of a previous search 🤔...")
+st.title("Recap🤔")
 
 # Add a back button to return to history
-if st.button("← Back to History"):
+if st.button(" Back to History"):
     st.switch_page("paths/history.py")
 
 st.divider()
@@ -51,7 +50,7 @@ if 'clicked_history_row' in st.session_state:
                 st.html(
                 f"""
                 <div style="background: {secondary_background_color}; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;">
-                <a href="{url['url']}" target="_blank" style="text-decoration: none; color: inherit;">
+                <a href="{url['url']}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
                     <div style="padding: 15px;">
                     <div style="font-size: 1.25rem; font-weight: bold; color: {text_color}; margin-bottom: 10px;">{url['title']}</div>
                     <div style="font-size: 0.8rem; color: {text_color};">{url['description']}</div>

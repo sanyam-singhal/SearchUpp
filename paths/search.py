@@ -10,6 +10,25 @@ import json
 
 import streamlit.components.v1 as components
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Set default values for environment variables if not present
+if not os.getenv('SIMPLE_SEARCH_NUMBER'):
+    os.environ['SIMPLE_SEARCH_NUMBER'] = '5'
+if not os.getenv('COMPLEX_SEARCH_NUMBER'):
+    os.environ['COMPLEX_SEARCH_NUMBER'] = '10'
+if not os.getenv('SIMPLE_LLM_MODEL'):
+    os.environ['SIMPLE_LLM_MODEL'] = 'gemini-1.5-flash-002'
+if not os.getenv('COMPLEX_LLM_MODEL'):
+    os.environ['COMPLEX_LLM_MODEL'] = 'gemini-exp-1206'
+if not os.getenv('PROJECT_DIR'):
+    os.environ['PROJECT_DIR'] = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if not os.getenv('SEARCH_SUMMARY_INSTRUCTIONS'):
+    os.environ['SEARCH_SUMMARY_INSTRUCTIONS'] = '''You are a skilled research assistant specializing in analyzing and summarizing information. Your task is to process content from multiple webpages scraped in response to a user query, then summarize and structure the information clearly and logically in 1000–4000 words based on the query's complexity and the depth of the content. Follow these steps to ensure high-quality output:** Understand the Query: Analyze the user's input to determine its intent, complexity, and specific focus areas. Synthesize Information: Combine relevant data from all sources to create a coherent narrative. Avoid repeating redundant details and ensure consistency across all information presented. Organize Structurally: Present the content in a well-structured format, including: Title: A concise and accurate title summarizing the content. Introduction: Provide a brief overview of the topic and what the user will learn. Main Sections: Divide the content into logically ordered sections with clear headings and subheadings. Each section should cover a distinct aspect of the topic. Details and Examples: Where relevant, include examples, statistics, or quotes to enrich the content. Conclusion: Summarize the key points and, if applicable, suggest next steps or resources for further exploration. Ensure Clarity: Write in clear, professional language appropriate for the target audience, avoiding technical jargon unless necessary. Cite Implicitly: Attribute key insights or data to their general source categories without directly quoting the webpages verbatim. Guidelines: Prioritize accuracy and relevance. Include only verifiable and pertinent information. Adjust the level of detail to suit the query's complexity. For simple topics, focus on clarity and conciseness. For complex ones, provide in-depth analysis and context. Eliminate bias or subjective opinions unless explicitly requested. Example Queries: 'Explain the impact of climate change on Arctic wildlife' or 'Summarize recent advancements in quantum computing.' Apply these instructions dynamically to address a wide range of topics'''
+if not os.getenv('MODE'):
+    os.environ['MODE'] = 'Cloud'
+
 # Load current theme
 config_path = os.path.join(os.path.dirname(__file__), '..', '.streamlit', 'config.toml')
 
@@ -26,7 +45,6 @@ text_color = config.get('theme', {}).get('textColor')
 font = config.get('theme', {}).get('font')
 
 # Configuring the overall search using environment variables
-load_dotenv()
 simple_search_number=int(os.getenv("SIMPLE_SEARCH_NUMBER"))
 complex_search_number=int(os.getenv("COMPLEX_SEARCH_NUMBER"))
 simple_llm_model=os.getenv("SIMPLE_LLM_MODEL")
@@ -39,6 +57,8 @@ if os.path.exists(search_history_path):
     current_index=history.shape[0]
 
 elif not os.path.exists(search_history_path):
+    if not os.path.exists("search"):
+        os.makedirs("search")
     history=pd.DataFrame(columns=["datetime","query","search_path","summary_path"])
     history.to_csv(search_history_path,index=False)
     current_index=0
@@ -68,6 +88,7 @@ else:
 results, summary=st.tabs(["Search Results", "Summary"])
 with results:
     if submitted and query:
+        st.write(f"Query: {query}")
         start_time = time.time()
         
         now = datetime.now()
@@ -85,7 +106,7 @@ with results:
                 st.html(
                 f"""
                 <div style="background: {secondary_background_color}; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;">
-                <a href="{url['url']}" target="_blank" style="text-decoration: none; color: inherit;">
+                <a href="{url['url']}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
                     <div style="padding: 15px;">
                     <div style="font-size: 1.25rem; font-weight: bold; color: {text_color}; margin-bottom: 10px;">{url['title']}</div>
                     <div style="font-size: 0.8rem; color: {text_color};">{url['description']}</div>

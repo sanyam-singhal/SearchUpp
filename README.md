@@ -51,8 +51,8 @@ SearchUpp is an intelligent web research assistant that helps you gather, analyz
 - Chrome browser installed (used by the Selenium package for scraping)
 - Required API keys and services:
   - Brave Search API key
-  - Google Gemini API key (optional, if using cloud-based summarization)
-  - Ollama installed and running (optional, if using local summarization)
+  - Google Gemini API key (optional, needed if using cloud-based summarization)
+  - Ollama installed and running (optional, needed if using local summarization)
 
 ### Installation
 
@@ -234,7 +234,89 @@ The application can be configured through environment variables:
 
 For detailed documentation of all functions and modules, please refer to the `modules/MODULE_DOCUMENTATION.md` file.
 
+## 👥 Contributing
+
+We welcome contributions to SearchUpp! Whether you're fixing bugs, adding new features, improving documentation, or suggesting enhancements, your help is appreciated.
+
+### How to Contribute
+
+1. **Fork the Repository**
+   - Fork the project repository to your GitHub account
+
+2. **Clone Your Fork**
+   ```bash
+   git clone https://github.com/your-username/searchupp.git
+   cd searchupp
+   ```
+
+3. **Create a Branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+4. **Make Your Changes**
+   - Write your code
+   - Follow the existing code style
+   - Add or update documentation as needed
+   - Add appropriate tests if applicable
+
+5. **Test Your Changes**
+   - Ensure all tests pass
+   - Test the functionality thoroughly
+
+6. **Commit Your Changes**
+   ```bash
+   git add .
+   git commit -m "Add a descriptive commit message"
+   ```
+
+7. **Push to Your Fork**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+8. **Submit a Pull Request**
+   - Open a pull request from your fork to our main repository
+   - Provide a clear description of your changes
+   - Reference any related issues
+
+### Development Guidelines
+
+- Follow PEP 8 style guide for Python code
+- Write clear, descriptive commit messages
+- Document new features or changes in the README
+- Update requirements.txt if adding new dependencies
+
+### Need Help?
+
+If you have questions or need help with the contribution process, feel free to:
+- Open an issue for discussion
+- Ask questions in pull requests
+- Reach out to the maintainers
+
+Thank you for contributing to SearchUpp! 🎉
+
+## 🔄 Recent Updates (12-12-2024)
+
+### Environment and Configuration
+- Simplified `.env` file to only require user-specific API keys (GEMINI_KEY and BRAVE_KEY)
+- All other configuration values are now set with sensible defaults in the application
+- Added dynamic project directory path resolution
+- Updated requirements.txt to include all necessary dependencies
+
+### User Interface Improvements
+- Added query display in search results for better context
+- Enhanced link security by adding `rel="noopener noreferrer"` to external links
+- Improved history page error handling
+- Updated "Recap" page title and styling
+
+### Code Organization
+- Removed redundant environment variables from startup scripts
+- Added automatic search directory creation
+- Improved code documentation and error handling
+- Updated package dependencies and versions
+
 ---
 
-**Generated on:** 2024-12-09
-**Version:** 2.0
+**Generated on:** 2024-12-12
+**Version:** 2.1

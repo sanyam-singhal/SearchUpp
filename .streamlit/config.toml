@@ -2,9 +2,9 @@
 base = "light"
 primaryColor = "#f27bbd"
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#c65bcf"
+secondaryBackgroundColor = "#ff6500"
 textColor = "#000000"
-font = "monospace"
+font = "sans serif"
 
 [server]
 runOnSave = true
